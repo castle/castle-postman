@@ -4,7 +4,12 @@ This repository contains a Postman Collection to use for interactions with the C
 
 To use this collection, you need an active Castle API key. [Sign up for a free Castle account here](https://dashboard.castle.io/signup/new).
 
+![](./screenshot.png)
+
 # Quick Start
+
+[![Run in Postman](https://run.pstmn.io/button.svg)](https://god.postman.co/run-collection/23049dd7bd38c2b54a03#?env%5BCastle-Sandbox%5D=W3sia2V5IjoiYXBpX3NlY3JldCIsInZhbHVlIjoiIiwiZW5hYmxlZCI6dHJ1ZX1d)
+
 1. Import `Castle.postman_collection.json` to your Postman Workspace
 2. Import `Castle-Sandbox.postman_environment.json` to your Postman Environments (this declares a single environment variable, `api_secret`)
 3. Set the `api_secret` environment variable to the API key for your Castle environment (found in your Castle Dashboard Settings - we recommend the "Sandbox" environment)
