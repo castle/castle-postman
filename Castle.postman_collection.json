@@ -1,0 +1,1795 @@
+{
+	"info": {
+		"_postman_id": "fd3f4b24-601d-481f-9cd6-2772d7dd031b",
+		"name": "Castle",
+		"description": "Send Requests to the [Castle](https://castle.io) API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Send Login Endpoint Events",
+			"item": [
+				{
+					"name": "with Random Data (use sparingly)",
+					"item": [
+						{
+							"name": "/authenticate - $login.succeeded",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "8d365641-c8c3-4b23-b3c9-ec0ac24184bc",
+										"exec": [
+											"var castleResponse = pm.response.json();",
+											"",
+											"pm.collectionVariables.set(\"device_token\", castleResponse.device_token);",
+											"",
+											"pm.collectionVariables.set(\"user_id\", castleResponse.user_id)",
+											"",
+											"pm.test(\"Status code is 201\", function () {",
+											"    pm.response.to.have.status(201);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "  {\n    \"event\": \"$login.succeeded\",\n    \"user_id\": \"{{user_id}}\",\n    \"user_traits\": {\n      \"email\": \"{{user_traits.email}}\",\n      \"registered_at\": \"{{user_traits.registered_at}}\"\n    },\n    \"context\": {\n      \"client_id\": \"{{context.client_id}}\",\n      \"ip\": \"{{context.ip}}\",\n      \"headers\": {{context.headers}},\n      \"library\": {{castle_sdk}}\n    }\n  }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://api.castle.io/v1/authenticate",
+									"protocol": "https",
+									"host": [
+										"api",
+										"castle",
+										"io"
+									],
+									"path": [
+										"v1",
+										"authenticate"
+									]
+								},
+								"description": "Send a `$login.succeeded` event to Castle's `/authenticate` endpoint. \n\n[Castle API Documentation](https://docs.castle.io/api_reference)"
+							},
+							"response": []
+						},
+						{
+							"name": "/track - $login.failed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "c0033842-5437-48ca-b88c-1ab81e607873",
+										"exec": [
+											"pm.test(\"Status code is 204\", function () {",
+											"    pm.response.to.have.status(204);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "  {\n    \"event\": \"$login.failed\",\n    \"properties\": {\n      \"email\": \"{{properties.email}}\"\n    },\n    \"context\": {\n      \"client_id\": \"{{context.client_id}}\",\n      \"ip\": \"{{context.ip}}\",\n      \"headers\": {{context.headers}},\n      \"library\": {{castle_sdk}}\n    }\n  }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://api.castle.io/v1/track",
+									"protocol": "https",
+									"host": [
+										"api",
+										"castle",
+										"io"
+									],
+									"path": [
+										"v1",
+										"track"
+									]
+								},
+								"description": "Send a `$login.failed` event to Castle's `/track` endpoint\n\n[Castle API Documentation](https://docs.castle.io/api_reference)"
+							},
+							"response": []
+						}
+					],
+					"description": "Use newly-generated, randomized data\n\n**NOTE: USE SPARINGLY**\nThese requests generate a new `user_id`, `User-Agent`, IP address, and even new random request headers\n\n**Under most circumstances, you will want to use this folder to make a single request**\n\nAfter you have generated new (random) data, the collection variables will persist that data for requests in other folders from this collection.",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "43fcecd0-d15a-4f2a-b312-c9c46803f74d",
+								"type": "text/javascript",
+								"exec": [
+									"pm.collectionVariables.set(\"user_id\", pm.variables.replaceIn(\"{{$guid}}\"))",
+									"",
+									"// TODO: ensure randomized IP is not private",
+									"pm.collectionVariables.set(\"context.ip\", pm.variables.replaceIn(\"{{$randomIP}}\"))",
+									"pm.collectionVariables.set(\"context.client_id\", pm.variables.replaceIn(\"{{$guid}}\"))",
+									"pm.collectionVariables.set(\"user_traits.email\", pm.variables.replaceIn(\"{{$randomExampleEmail}}\"))",
+									"pm.collectionVariables.set(\"properties.email\", pm.variables.get(\"user_traits.email\"))",
+									"pm.collectionVariables.set(\"context.headers\", randomizeHeaders())",
+									"",
+									"function randomizeHeaders() {",
+									"  baseHeaders = JSON.parse('{\\",
+									"  \"Accept\": \"text/html\",\\",
+									"  \"Accept-Encoding\": \"gzip\",\\",
+									"  \"Cache-Control\": \"no-cache\",\\",
+									"  \"Content-Type\": \"multipart/form-data\",\\",
+									"  \"Content-Length\": 100,\\",
+									"  \"Connection\": \"close\",\\",
+									"  \"User-Agent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/86.0.4238.0 Safari/537.36\"\\",
+									"}')",
+									"",
+									"  baseHeaders[\"Accept\"] = pm.variables.replaceIn(\"{{$randomMimeType}}\")",
+									"  baseHeaders[\"Accept-Encoding\"] = pm.variables.replaceIn(\"{{$randomFileExt}}\")",
+									"  baseHeaders[\"Cache-Control\"] = pm.variables.replaceIn(\"max-age={{$randomInt}}\")",
+									"  baseHeaders[\"Content-Length\"] = pm.variables.replaceIn(\"{{$randomInt}}\")",
+									"  baseHeaders[\"User-Agent\"] = pm.variables.replaceIn(\"{{$randomUserAgent}}/{{$randomInt}}.{{$randomInt}}\")",
+									"",
+									"  additionalHeaders = JSON.parse('{\\",
+									"  \"Accept-Charset\": \"utf-8\",\\",
+									"  \"Accept-Language\": \"us-en\",\\",
+									"  \"Authorization\": \"nope\",\\",
+									"  \"Cookie\": \"flavor=macademia_nut\",\\",
+									"  \"From\": \"postman@castle.io\",\\",
+									"  \"Host\": \"auth.myapp.io\",\\",
+									"  \"If-Match\": \"1234567890\",\\",
+									"  \"If-Modified-Since\": \"November 13, 2020\",\\",
+									"  \"If-None-Match\": \"1234567890\",\\",
+									"  \"If-Range\": \"1234567890\",\\",
+									"  \"If-Unmodified-Since\": \"November 13, 2020\",\\",
+									"  \"Max-Forwards\": 0,\\",
+									"  \"Referer\": \"marketing.myapp.io\"\\",
+									"  }')",
+									"",
+									"  additionalHeaders[\"Accept-Language\"] = pm.variables.replaceIn(\"{{$randomLocale}}\")",
+									"  additionalHeaders[\"Authorization\"] = pm.variables.replaceIn(\"{{$randomPassword}}\")",
+									"  additionalHeaders[\"Cookie\"] = pm.variables.replaceIn(\"{{$randomNoun}}={{$guid}}\")",
+									"  additionalHeaders[\"From\"] = pm.variables.replaceIn(\"{{$randomExampleEmail}}\")",
+									"  additionalHeaders[\"Host\"] = pm.variables.replaceIn(\"{{$randomUrl}}\")",
+									"  additionalHeaders[\"If-Match\"] = pm.variables.replaceIn(\"{{$guid}}\")",
+									"  additionalHeaders[\"If-Modified-Since\"] = pm.variables.replaceIn(\"{{$randomDateRecent}}\")",
+									"  additionalHeaders[\"If-None-Match\"] = pm.variables.replaceIn(\"{{$guid}}\")",
+									"  additionalHeaders[\"If-Range\"] = pm.variables.replaceIn(\"{{$guid}}\")",
+									"  additionalHeaders[\"If-Unmodified-Since\"] = pm.variables.replaceIn(\"{{$randomDateRecent}}\")",
+									"  additionalHeaders[\"Max-Forwards\"] = pm.variables.replaceIn(\"{{$randomInt}}\")",
+									"  additionalHeaders[\"Referer\"] = pm.variables.replaceIn(\"{{$randomUrl}}\")",
+									"",
+									"  headers = Object.assign({}, baseHeaders, additionalHeaders)",
+									"",
+									"  return JSON.stringify(headers)",
+									"}"
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "f1a40f23-7ca5-4036-9166-24bd8153d94f",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "with Persistent Data",
+					"item": [
+						{
+							"name": "/authenticate - $login.succeeded",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "b9893375-5d6e-42bc-b62b-de59fe641710",
+										"exec": [
+											"var castleResponse = pm.response.json();",
+											"",
+											"pm.collectionVariables.set(\"device_token\", castleResponse.device_token);",
+											"",
+											"pm.collectionVariables.set(\"user_id\", castleResponse.user_id)",
+											"",
+											"pm.test(\"Status code is 201\", function () {",
+											"    pm.response.to.have.status(201);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "aa6a2836-c208-46b1-a75a-f81056f91bee",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "  {\n    \"event\": \"$login.succeeded\",\n    \"user_id\": \"{{user_id}}\",\n    \"user_traits\": {\n      \"email\": \"{{user_traits.email}}\",\n      \"registered_at\": \"{{user_traits.registered_at}}\",\n      \"custom_user_trait_{{iteration}}\": true\n    },\n    \"context\": {\n      \"client_id\": \"{{context.client_id}}\",\n      \"ip\": \"{{context.ip}}\",\n      \"headers\": {{context.headers}},\n      \"library\": {{castle_sdk}}\n    }\n  }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://api.castle.io/v1/authenticate",
+									"protocol": "https",
+									"host": [
+										"api",
+										"castle",
+										"io"
+									],
+									"path": [
+										"v1",
+										"authenticate"
+									]
+								},
+								"description": "Send a `$login.succeeded` event to Castle's `/authenticate` endpoint. \n\n[Castle API Documentation](https://docs.castle.io/api_reference)"
+							},
+							"response": []
+						},
+						{
+							"name": "/track - $login.failed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "c1fcc06a-20ea-4364-b6ed-fe6fff54c477",
+										"exec": [
+											"pm.test(\"Status code is 204\", function () {",
+											"    pm.response.to.have.status(204);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "  {\n    \"event\": \"$login.failed\",\n    \"properties\": {\n      \"email\": \"{{properties.email}}\"\n    },\n    \"context\": {\n      \"client_id\": \"{{context.client_id}}\",\n      \"ip\": \"{{context.ip}}\",\n      \"headers\": {{context.headers}},\n      \"library\": {{castle_sdk}}\n    }\n  }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://api.castle.io/v1/track",
+									"protocol": "https",
+									"host": [
+										"api",
+										"castle",
+										"io"
+									],
+									"path": [
+										"v1",
+										"track"
+									]
+								},
+								"description": "Send a `$login.failed` event to Castle's `/track` endpoint\n\n[Castle API Documentation](https://docs.castle.io/api_reference)"
+							},
+							"response": []
+						}
+					],
+					"description": "Use data saved in the collection variables to assign `user_id`, `User-Agent`, and other values.\n\nThese requests use data saved in collection variables. Should you desire, you can assign local or environment variables to the same variable names, and your local or environment variables will overwrite the values saved in the collection variables.\n\nAfter you have generated new (random) data, the collection variables will persist that data for requests in other folders from this collection.",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "905d6170-e6d8-4a87-aac2-d8e0f8b35f30",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "cc80af7f-171a-4bf1-9eaa-ef06d95c4352",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "with Mostly-Persistent Data",
+					"item": [
+						{
+							"name": "and a Random IP",
+							"item": [
+								{
+									"name": "/authenticate - $login.succeeded",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "d809ab5e-2b0e-43ab-b5c0-ead398c175a7",
+												"exec": [
+													"var castleResponse = pm.response.json();",
+													"",
+													"pm.collectionVariables.set(\"device_token\", castleResponse.device_token);",
+													"",
+													"pm.collectionVariables.set(\"user_id\", castleResponse.user_id)",
+													"",
+													"pm.test(\"Status code is 201\", function () {",
+													"    pm.response.to.have.status(201);",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "  {\n    \"event\": \"$login.succeeded\",\n    \"user_id\": \"{{user_id}}\",\n    \"user_traits\": {\n      \"email\": \"{{user_traits.email}}\",\n      \"registered_at\": \"{{user_traits.registered_at}}\"\n    },\n    \"context\": {\n      \"client_id\": \"{{context.client_id}}\",\n      \"ip\": \"{{context.ip}}\",\n      \"headers\": {{context.headers}},\n      \"library\": {{castle_sdk}}\n    }\n  }",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "https://api.castle.io/v1/authenticate",
+											"protocol": "https",
+											"host": [
+												"api",
+												"castle",
+												"io"
+											],
+											"path": [
+												"v1",
+												"authenticate"
+											]
+										},
+										"description": "Send a `$login.succeeded` event to Castle's `/authenticate` endpoint. \n\n[Castle API Documentation](https://docs.castle.io/api_reference)"
+									},
+									"response": []
+								},
+								{
+									"name": "/track - $login.failed",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "0da78efe-4353-407d-b77e-7a788b0d078b",
+												"exec": [
+													"pm.test(\"Status code is 204\", function () {",
+													"    pm.response.to.have.status(204);",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "  {\n    \"event\": \"$login.failed\",\n    \"properties\": {\n      \"email\": \"{{properties.email}}\"\n    },\n    \"context\": {\n      \"client_id\": \"{{context.client_id}}\",\n      \"ip\": \"{{context.ip}}\",\n      \"headers\": {{context.headers}},\n      \"library\": {{castle_sdk}}\n    }\n  }",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "https://api.castle.io/v1/track",
+											"protocol": "https",
+											"host": [
+												"api",
+												"castle",
+												"io"
+											],
+											"path": [
+												"v1",
+												"track"
+											]
+										},
+										"description": "Send a `$login.failed` event to Castle's `/track` endpoint\n\n[Castle API Documentation](https://docs.castle.io/api_reference)"
+									},
+									"response": []
+								}
+							],
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "826032be-058e-4656-a438-349f60c5976e",
+										"type": "text/javascript",
+										"exec": [
+											"pm.collectionVariables.set(\"context.ip\", pm.variables.replaceIn(\"{{$randomIP}}\"))"
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "92d9df12-dd1d-438d-8f2d-a8924f2e9afa",
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								}
+							],
+							"protocolProfileBehavior": {},
+							"_postman_isSubFolder": true
+						},
+						{
+							"name": "and a Random User-Agent",
+							"item": [
+								{
+									"name": "/authenticate - $login.succeeded",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "48385253-ba2f-47f3-b3e1-227521f439de",
+												"exec": [
+													"var castleResponse = pm.response.json();",
+													"",
+													"pm.collectionVariables.set(\"device_token\", castleResponse.device_token);",
+													"",
+													"pm.collectionVariables.set(\"user_id\", castleResponse.user_id)",
+													"",
+													"pm.test(\"Status code is 201\", function () {",
+													"    pm.response.to.have.status(201);",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "  {\n    \"event\": \"$login.succeeded\",\n    \"user_id\": \"{{user_id}}\",\n    \"user_traits\": {\n      \"email\": \"{{user_traits.email}}\",\n      \"registered_at\": \"{{user_traits.registered_at}}\"\n    },\n    \"context\": {\n      \"client_id\": \"{{context.client_id}}\",\n      \"ip\": \"{{context.ip}}\",\n      \"headers\": {{context.headers}},\n      \"library\": {{castle_sdk}}\n    }\n  }",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "https://api.castle.io/v1/authenticate",
+											"protocol": "https",
+											"host": [
+												"api",
+												"castle",
+												"io"
+											],
+											"path": [
+												"v1",
+												"authenticate"
+											]
+										},
+										"description": "Send a `$login.succeeded` event to Castle's `/authenticate` endpoint. \n\n[Castle API Documentation](https://docs.castle.io/api_reference)"
+									},
+									"response": []
+								},
+								{
+									"name": "/track - $login.failed",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "6ee46074-8dc0-4f74-b3dd-75385f6825a7",
+												"exec": [
+													"pm.test(\"Status code is 204\", function () {",
+													"    pm.response.to.have.status(204);",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "  {\n    \"event\": \"$login.failed\",\n    \"properties\": {\n      \"email\": \"{{properties.email}}\"\n    },\n    \"context\": {\n      \"client_id\": \"{{context.client_id}}\",\n      \"ip\": \"{{context.ip}}\",\n      \"headers\": {{context.headers}},\n      \"library\": {{castle_sdk}}\n    }\n  }",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "https://api.castle.io/v1/track",
+											"protocol": "https",
+											"host": [
+												"api",
+												"castle",
+												"io"
+											],
+											"path": [
+												"v1",
+												"track"
+											]
+										},
+										"description": "Send a `$login.failed` event to Castle's `/track` endpoint\n\n[Castle API Documentation](https://docs.castle.io/api_reference)"
+									},
+									"response": []
+								}
+							],
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "49c98c53-b89c-4135-baaa-9532240bd5f3",
+										"type": "text/javascript",
+										"exec": [
+											"let headers = JSON.parse(pm.collectionVariables.get(\"context.headers\"))",
+											"",
+											"headers[\"User-Agent\"] = pm.variables.replaceIn(\"{{$randomUserAgent}}/{{$randomInt}}.{{$randomInt}}\")",
+											"",
+											"pm.collectionVariables.set(\"context.headers\", JSON.stringify(headers))",
+											"pm.collectionVariables.set(\"context.client_id\", pm.variables.replaceIn(\"{{$guid}}\"))"
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "3fd66a7d-d90a-494e-8783-856a30394837",
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								}
+							],
+							"protocolProfileBehavior": {},
+							"_postman_isSubFolder": true
+						},
+						{
+							"name": "and a Random IP and User-Agent",
+							"item": [
+								{
+									"name": "/authenticate - $login.succeeded",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "161dbc07-8e24-49e0-9a7d-9d36a204406e",
+												"exec": [
+													"var castleResponse = pm.response.json();",
+													"",
+													"pm.collectionVariables.set(\"device_token\", castleResponse.device_token);",
+													"",
+													"pm.collectionVariables.set(\"user_id\", castleResponse.user_id)",
+													"",
+													"pm.test(\"Status code is 201\", function () {",
+													"    pm.response.to.have.status(201);",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "  {\n    \"event\": \"$login.succeeded\",\n    \"user_id\": \"{{user_id}}\",\n    \"user_traits\": {\n      \"email\": \"{{user_traits.email}}\",\n      \"registered_at\": \"{{user_traits.registered_at}}\"\n    },\n    \"context\": {\n      \"client_id\": \"{{context.client_id}}\",\n      \"ip\": \"{{context.ip}}\",\n      \"headers\": {{context.headers}},\n      \"library\": {{castle_sdk}}\n    }\n  }",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "https://api.castle.io/v1/authenticate",
+											"protocol": "https",
+											"host": [
+												"api",
+												"castle",
+												"io"
+											],
+											"path": [
+												"v1",
+												"authenticate"
+											]
+										},
+										"description": "Send a `$login.succeeded` event to Castle's `/authenticate` endpoint. \n\n[Castle API Documentation](https://docs.castle.io/api_reference)"
+									},
+									"response": []
+								},
+								{
+									"name": "/track - $login.failed",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "fbf4ade3-58bc-49b9-89b1-b054cdc5ee0a",
+												"exec": [
+													"pm.test(\"Status code is 204\", function () {",
+													"    pm.response.to.have.status(204);",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "  {\n    \"event\": \"$login.failed\",\n    \"properties\": {\n      \"email\": \"{{properties.email}}\"\n    },\n    \"context\": {\n      \"client_id\": \"{{context.client_id}}\",\n      \"ip\": \"{{context.ip}}\",\n      \"headers\": {{context.headers}},\n      \"library\": {{castle_sdk}}\n    }\n  }",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "https://api.castle.io/v1/track",
+											"protocol": "https",
+											"host": [
+												"api",
+												"castle",
+												"io"
+											],
+											"path": [
+												"v1",
+												"track"
+											]
+										},
+										"description": "Send a `$login.failed` event to Castle's `/track` endpoint\n\n[Castle API Documentation](https://docs.castle.io/api_reference)"
+									},
+									"response": []
+								}
+							],
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "6834446a-5916-4e75-9f4e-2593890dbcab",
+										"type": "text/javascript",
+										"exec": [
+											"let headers = JSON.parse(pm.collectionVariables.get(\"context.headers\"))",
+											"",
+											"headers[\"User-Agent\"] = pm.variables.replaceIn(\"{{$randomUserAgent}}/{{$randomInt}}.{{$randomInt}}\")",
+											"",
+											"pm.collectionVariables.set(\"context.headers\", JSON.stringify(headers))",
+											"pm.collectionVariables.set(\"context.ip\", pm.variables.replaceIn(\"{{$randomIP}}\"))",
+											"pm.collectionVariables.set(\"context.client_id\", pm.variables.replaceIn(\"{{$guid}}\"))"
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "78ef4c43-c6e1-4230-8c18-88a415997663",
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								}
+							],
+							"protocolProfileBehavior": {},
+							"_postman_isSubFolder": true
+						},
+						{
+							"name": "and a Random User",
+							"item": [
+								{
+									"name": "/authenticate - $login.succeeded",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "fe025ff8-90c6-47c1-a23b-283ea4edae0c",
+												"exec": [
+													"var castleResponse = pm.response.json();",
+													"",
+													"pm.collectionVariables.set(\"device_token\", castleResponse.device_token);",
+													"",
+													"pm.collectionVariables.set(\"user_id\", castleResponse.user_id)",
+													"",
+													"pm.test(\"Status code is 201\", function () {",
+													"    pm.response.to.have.status(201);",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "  {\n    \"event\": \"$login.succeeded\",\n    \"user_id\": \"{{user_id}}\",\n    \"user_traits\": {\n      \"email\": \"{{user_traits.email}}\",\n      \"registered_at\": \"{{user_traits.registered_at}}\"\n    },\n    \"context\": {\n      \"client_id\": \"{{context.client_id}}\",\n      \"ip\": \"{{context.ip}}\",\n      \"headers\": {{context.headers}},\n      \"library\": {{castle_sdk}}\n    }\n  }",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "https://api.castle.io/v1/authenticate",
+											"protocol": "https",
+											"host": [
+												"api",
+												"castle",
+												"io"
+											],
+											"path": [
+												"v1",
+												"authenticate"
+											]
+										},
+										"description": "Send a `$login.succeeded` event to Castle's `/authenticate` endpoint. \n\n[Castle API Documentation](https://docs.castle.io/api_reference)"
+									},
+									"response": [
+										{
+											"name": "/authenticate - $login.succeeded (deny)",
+											"originalRequest": {
+												"method": "POST",
+												"header": [],
+												"body": {
+													"mode": "raw",
+													"raw": "  {\n    \"event\": \"$login.succeeded\",\n    \"user_id\": \"{{user_id}}\",\n    \"user_traits\": {\n      \"email\": \"{{user_traits.email}}\",\n      \"registered_at\": \"{{user_traits.registered_at}}\"\n    },\n    \"context\": {\n      \"client_id\": \"{{context.client_id}}\",\n      \"ip\": \"{{context.ip}}\",\n      \"headers\": {{context.headers}}\n    }\n  }",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "https://api.castle.io/v1/authenticate",
+													"protocol": "https",
+													"host": [
+														"api",
+														"castle",
+														"io"
+													],
+													"path": [
+														"v1",
+														"authenticate"
+													]
+												}
+											},
+											"status": "Created",
+											"code": 201,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Date",
+													"value": "Sat, 14 Nov 2020 00:31:51 GMT"
+												},
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												},
+												{
+													"key": "Transfer-Encoding",
+													"value": "chunked"
+												},
+												{
+													"key": "Connection",
+													"value": "keep-alive"
+												},
+												{
+													"key": "Cache-Control",
+													"value": "no-cache"
+												},
+												{
+													"key": "ETag",
+													"value": "W/\"65a80972d718c071cc3bfb80fb2647fe\""
+												},
+												{
+													"key": "X-Request-Id",
+													"value": "7a601cbb-82e2-4e4a-a99a-f1dd7efeccc0"
+												},
+												{
+													"key": "Server",
+													"value": "castle.io"
+												}
+											],
+											"cookie": [],
+											"body": "{\n    \"action\": \"deny\",\n    \"user_id\": \"997daf16-2c63-4dc4-b53d-3321b6551ff9\",\n    \"device_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJ0b2tlbiI6Iml4WkR3SGVyYmpjcktYcjNPeVNiTXVZN01Zek4iLCJxdWFsaWZpZXIiOiJBUUlDQ1RrNU16RXdNamt4T0EiLCJhbm9ueW1vdXMiOmZhbHNlLCJ2ZXJzaW9uIjowLjN9.MhXiDSUhoAHC0Dic9SRdPUjxtjvTxNSNrkQIeMn68bs\"\n}"
+										}
+									]
+								},
+								{
+									"name": "/track - $login.failed",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "b9fd3c60-a8bf-4055-a34b-e25f5ad72485",
+												"exec": [
+													"pm.test(\"Status code is 204\", function () {",
+													"    pm.response.to.have.status(204);",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "  {\n    \"event\": \"$login.failed\",\n    \"properties\": {\n      \"email\": \"{{properties.email}}\"\n    },\n    \"context\": {\n      \"client_id\": \"{{context.client_id}}\",\n      \"ip\": \"{{context.ip}}\",\n      \"headers\": {{context.headers}},\n      \"library\": {{castle_sdk}}\n    }\n  }",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "https://api.castle.io/v1/track",
+											"protocol": "https",
+											"host": [
+												"api",
+												"castle",
+												"io"
+											],
+											"path": [
+												"v1",
+												"track"
+											]
+										},
+										"description": "Send a `$login.failed` event to Castle's `/track` endpoint\n\n[Castle API Documentation](https://docs.castle.io/api_reference)"
+									},
+									"response": []
+								}
+							],
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "206766ed-56dc-40d7-91d3-ea54193a0d8a",
+										"type": "text/javascript",
+										"exec": [
+											"pm.collectionVariables.set(\"user_id\", pm.variables.replaceIn(\"{{$guid}}\"))",
+											"pm.collectionVariables.set(\"user_traits.email\", pm.variables.replaceIn(\"{{$randomExampleEmail}}\"))",
+											"pm.collectionVariables.set(\"properties.email\", pm.variables.get(\"user_traits.email\"))"
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "845425f6-7385-4a73-84a3-8f2b31372c5f",
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								}
+							],
+							"protocolProfileBehavior": {},
+							"_postman_isSubFolder": true
+						}
+					],
+					"description": "Use *mostly* data saved in the collection variables to assign `user_id`, `User-Agent`, and other values. \n\n**Overwrite specific variables such as `IP`, or `User-Agent`**\n\nThese requests use data saved in collection variables. Should you desire, you can assign local or environment variables to the same variable names, and your local or environment variables will overwrite the values saved in the collection variables.\n\nAfter you have generated new (random) data, the collection variables will persist that data for requests in other folders from this collection.",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "c59791b4-e0bd-4fc0-a1f8-d926469cdfb5",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "41496b3b-c49a-48d3-8073-c0313e05b335",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				}
+			],
+			"description": "Send events related to an application login endpoint\n- `$login.succeeded`\n- `$login.failed`",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "8a561d74-b9bc-4586-9122-ffd2ddebc916",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "320c2605-2680-4cbd-84f9-f02d907c4052",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Device Management",
+			"item": [
+				{
+					"name": "All User Devices",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "096ec5bb-87e4-4cef-8b4d-f7395cade3b2",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "e22f5af7-8a8a-4b92-a175-47a66ebbcb74",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://api.castle.io/v1/users/{{user_id}}/devices",
+							"protocol": "https",
+							"host": [
+								"api",
+								"castle",
+								"io"
+							],
+							"path": [
+								"v1",
+								"users",
+								"{{user_id}}",
+								"devices"
+							]
+						},
+						"description": "Get all user devices"
+					},
+					"response": [
+						{
+							"name": "All User Devices",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://api.castle.io/v1/users/{{user_id}}/devices",
+									"protocol": "https",
+									"host": [
+										"api",
+										"castle",
+										"io"
+									],
+									"path": [
+										"v1",
+										"users",
+										"{{user_id}}",
+										"devices"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Wed, 12 Jun 2019 21:27:50 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"e3408769e038524142ad6fc5f248e6f8\""
+								},
+								{
+									"key": "Cache-Control",
+									"value": "max-age=0, private, must-revalidate"
+								},
+								{
+									"key": "X-Request-Id",
+									"value": "d2deec99-4e80-4995-b76d-56e00350b97f"
+								},
+								{
+									"key": "Server",
+									"value": "castle.io"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "gzip"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"total_count\": 1,\n    \"data\": [\n        {\n            \"token\": \"eyJhbGciOiJIUzI1NiJ9.eyJ0b2tlbiI6Im5iUkRqeHVUcFU3UXhxbmE5VXFqS1UxaE5MWWd1cHN6IiwidmVyc2lvbiI6MC4xfQ.Ca0X2OVPubka_BHkPp0K56EE1DB0FIt4HEk72HayFGs\",\n            \"created_at\": \"2019-06-11T23:24:02.632Z\",\n            \"last_seen_at\": \"2019-06-12T21:26:58.811Z\",\n            \"approved_at\": null,\n            \"escalated_at\": \"2019-06-12T21:26:59.705Z\",\n            \"mitigated_at\": null,\n            \"context\": {\n                \"ip\": \"37.46.187.90\",\n                \"location\": {\n                    \"country_code\": \"SE\",\n                    \"country\": \"Sweden\",\n                    \"region\": \"Skåne\",\n                    \"region_code\": \"M\",\n                    \"city\": \"Bunkeflostrand\",\n                    \"lat\": 55.5333,\n                    \"lon\": 12.95\n                },\n                \"user_agent\": {\n                    \"raw\": \"Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko\",\n                    \"browser\": \"IE\",\n                    \"version\": \"11.0\",\n                    \"os\": \"Windows 8.1 \",\n                    \"mobile\": false,\n                    \"platform\": \"Windows 8.1\",\n                    \"device\": \"Unknown\",\n                    \"family\": \"IE\"\n                },\n                \"properties\": {},\n                \"type\": \"desktop\"\n            },\n            \"is_current_device\": false\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Device (by device_token)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "f14eb22d-7aec-41d1-a0d2-d2badd82bd2f",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://api.castle.io/v1/devices/{{device_token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"castle",
+								"io"
+							],
+							"path": [
+								"v1",
+								"devices",
+								"{{device_token}}"
+							]
+						},
+						"description": "Get information about a device"
+					},
+					"response": [
+						{
+							"name": "Device",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://api.castle.io/v1/devices/{{device_token}}",
+									"protocol": "https",
+									"host": [
+										"api",
+										"castle",
+										"io"
+									],
+									"path": [
+										"v1",
+										"devices",
+										"{{device_token}}"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Wed, 12 Jun 2019 21:28:08 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"fcd1b38befe31388a026d3ae2652192e\""
+								},
+								{
+									"key": "Cache-Control",
+									"value": "max-age=0, private, must-revalidate"
+								},
+								{
+									"key": "X-Request-Id",
+									"value": "75113c7f-86cf-40a6-9ffa-5ec6b6da2faf"
+								},
+								{
+									"key": "Server",
+									"value": "castle.io"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "gzip"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"token\": \"eyJhbGciOiJIUzI1NiJ9.eyJ0b2tlbiI6Im5iUkRqeHVUcFU3UXhxbmE5VXFqS1UxaE5MWWd1cHN6IiwidmVyc2lvbiI6MC4xfQ.Ca0X2OVPubka_BHkPp0K56EE1DB0FIt4HEk72HayFGs\",\n    \"created_at\": \"2019-06-11T23:24:02.632Z\",\n    \"last_seen_at\": \"2019-06-12T21:26:58.811Z\",\n    \"approved_at\": null,\n    \"escalated_at\": \"2019-06-12T21:26:59.705Z\",\n    \"mitigated_at\": null,\n    \"context\": {\n        \"ip\": \"37.46.187.90\",\n        \"location\": {\n            \"country_code\": \"SE\",\n            \"country\": \"Sweden\",\n            \"region\": \"Skåne\",\n            \"region_code\": \"M\",\n            \"city\": \"Bunkeflostrand\",\n            \"lat\": 55.5333,\n            \"lon\": 12.95\n        },\n        \"user_agent\": {\n            \"raw\": \"Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko\",\n            \"browser\": \"IE\",\n            \"version\": \"11.0\",\n            \"os\": \"Windows 8.1 \",\n            \"mobile\": false,\n            \"platform\": \"Windows 8.1\",\n            \"device\": \"Unknown\",\n            \"family\": \"IE\"\n        },\n        \"properties\": {},\n        \"type\": \"desktop\"\n    },\n    \"is_current_device\": false\n}"
+						}
+					]
+				},
+				{
+					"name": "Approve Device",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "f0e7fd62-4077-4e3e-80e9-0348ae95ad40",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "https://api.castle.io/v1/devices/{{device_token}}/approve",
+							"protocol": "https",
+							"host": [
+								"api",
+								"castle",
+								"io"
+							],
+							"path": [
+								"v1",
+								"devices",
+								"{{device_token}}",
+								"approve"
+							]
+						},
+						"description": "Approve a device"
+					},
+					"response": [
+						{
+							"name": "Device",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://api.castle.io/v1/devices/{{device_token}}",
+									"protocol": "https",
+									"host": [
+										"api",
+										"castle",
+										"io"
+									],
+									"path": [
+										"v1",
+										"devices",
+										"{{device_token}}"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Wed, 12 Jun 2019 21:28:08 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"fcd1b38befe31388a026d3ae2652192e\""
+								},
+								{
+									"key": "Cache-Control",
+									"value": "max-age=0, private, must-revalidate"
+								},
+								{
+									"key": "X-Request-Id",
+									"value": "75113c7f-86cf-40a6-9ffa-5ec6b6da2faf"
+								},
+								{
+									"key": "Server",
+									"value": "castle.io"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "gzip"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"token\": \"eyJhbGciOiJIUzI1NiJ9.eyJ0b2tlbiI6Im5iUkRqeHVUcFU3UXhxbmE5VXFqS1UxaE5MWWd1cHN6IiwidmVyc2lvbiI6MC4xfQ.Ca0X2OVPubka_BHkPp0K56EE1DB0FIt4HEk72HayFGs\",\n    \"created_at\": \"2019-06-11T23:24:02.632Z\",\n    \"last_seen_at\": \"2019-06-12T21:26:58.811Z\",\n    \"approved_at\": null,\n    \"escalated_at\": \"2019-06-12T21:26:59.705Z\",\n    \"mitigated_at\": null,\n    \"context\": {\n        \"ip\": \"37.46.187.90\",\n        \"location\": {\n            \"country_code\": \"SE\",\n            \"country\": \"Sweden\",\n            \"region\": \"Skåne\",\n            \"region_code\": \"M\",\n            \"city\": \"Bunkeflostrand\",\n            \"lat\": 55.5333,\n            \"lon\": 12.95\n        },\n        \"user_agent\": {\n            \"raw\": \"Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko\",\n            \"browser\": \"IE\",\n            \"version\": \"11.0\",\n            \"os\": \"Windows 8.1 \",\n            \"mobile\": false,\n            \"platform\": \"Windows 8.1\",\n            \"device\": \"Unknown\",\n            \"family\": \"IE\"\n        },\n        \"properties\": {},\n        \"type\": \"desktop\"\n    },\n    \"is_current_device\": false\n}"
+						}
+					]
+				},
+				{
+					"name": "Report Device",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "6e7a6613-bda9-4a2f-add1-8f89c2211f9c",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "https://api.castle.io/v1/devices/{{device_token}}/report",
+							"protocol": "https",
+							"host": [
+								"api",
+								"castle",
+								"io"
+							],
+							"path": [
+								"v1",
+								"devices",
+								"{{device_token}}",
+								"report"
+							]
+						},
+						"description": "Report (Block) a device"
+					},
+					"response": [
+						{
+							"name": "Device",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://api.castle.io/v1/devices/{{device_token}}",
+									"protocol": "https",
+									"host": [
+										"api",
+										"castle",
+										"io"
+									],
+									"path": [
+										"v1",
+										"devices",
+										"{{device_token}}"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Wed, 12 Jun 2019 21:28:08 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"fcd1b38befe31388a026d3ae2652192e\""
+								},
+								{
+									"key": "Cache-Control",
+									"value": "max-age=0, private, must-revalidate"
+								},
+								{
+									"key": "X-Request-Id",
+									"value": "75113c7f-86cf-40a6-9ffa-5ec6b6da2faf"
+								},
+								{
+									"key": "Server",
+									"value": "castle.io"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "gzip"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"token\": \"eyJhbGciOiJIUzI1NiJ9.eyJ0b2tlbiI6Im5iUkRqeHVUcFU3UXhxbmE5VXFqS1UxaE5MWWd1cHN6IiwidmVyc2lvbiI6MC4xfQ.Ca0X2OVPubka_BHkPp0K56EE1DB0FIt4HEk72HayFGs\",\n    \"created_at\": \"2019-06-11T23:24:02.632Z\",\n    \"last_seen_at\": \"2019-06-12T21:26:58.811Z\",\n    \"approved_at\": null,\n    \"escalated_at\": \"2019-06-12T21:26:59.705Z\",\n    \"mitigated_at\": null,\n    \"context\": {\n        \"ip\": \"37.46.187.90\",\n        \"location\": {\n            \"country_code\": \"SE\",\n            \"country\": \"Sweden\",\n            \"region\": \"Skåne\",\n            \"region_code\": \"M\",\n            \"city\": \"Bunkeflostrand\",\n            \"lat\": 55.5333,\n            \"lon\": 12.95\n        },\n        \"user_agent\": {\n            \"raw\": \"Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko\",\n            \"browser\": \"IE\",\n            \"version\": \"11.0\",\n            \"os\": \"Windows 8.1 \",\n            \"mobile\": false,\n            \"platform\": \"Windows 8.1\",\n            \"device\": \"Unknown\",\n            \"family\": \"IE\"\n        },\n        \"properties\": {},\n        \"type\": \"desktop\"\n    },\n    \"is_current_device\": false\n}"
+						}
+					]
+				}
+			],
+			"description": "Endpoints for User Device Management",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "31aec18a-07df-40ed-8bef-9e4536f0b58e",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "8ca9311e-4995-4bdb-b33e-b3515d87d48b",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "User Impersonation (Ignore Events)",
+			"item": [
+				{
+					"name": "/impersonate (Start Impersonation)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d778c97f-5f97-42c9-95db-ff7ee42628d1",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "b8809d45-d381-4ad2-9d6c-4c3367864a1b",
+								"exec": [
+									"pm.collectionVariables.set(\"user_id\", pm.variables.replaceIn(\"{{$guid}}\"))",
+									"",
+									"// TODO: ensure randomized IP is not private",
+									"pm.collectionVariables.set(\"context.ip\", pm.variables.replaceIn(\"{{$randomIP}}\"))",
+									"pm.collectionVariables.set(\"context.client_id\", pm.variables.replaceIn(\"{{$guid}}\"))",
+									"pm.collectionVariables.set(\"user_traits.email\", pm.variables.replaceIn(\"{{$randomExampleEmail}}\"))",
+									"pm.collectionVariables.set(\"properties.email\", pm.variables.get(\"user_traits.email\"))",
+									"pm.collectionVariables.set(\"context.headers\", randomizeHeaders())",
+									"",
+									"function randomizeHeaders() {",
+									"  baseHeaders = JSON.parse('{\\",
+									"  \"Accept\": \"text/html\",\\",
+									"  \"Accept-Encoding\": \"gzip\",\\",
+									"  \"Cache-Control\": \"no-cache\",\\",
+									"  \"Content-Type\": \"multipart/form-data\",\\",
+									"  \"Content-Length\": 100,\\",
+									"  \"Connection\": \"close\",\\",
+									"  \"User-Agent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/86.0.4238.0 Safari/537.36\"\\",
+									"}')",
+									"",
+									"  baseHeaders[\"Accept\"] = pm.variables.replaceIn(\"{{$randomMimeType}}\")",
+									"  baseHeaders[\"Accept-Encoding\"] = pm.variables.replaceIn(\"{{$randomFileExt}}\")",
+									"  baseHeaders[\"Cache-Control\"] = pm.variables.replaceIn(\"max-age={{$randomInt}}\")",
+									"  baseHeaders[\"Content-Length\"] = pm.variables.replaceIn(\"{{$randomInt}}\")",
+									"  baseHeaders[\"User-Agent\"] = pm.variables.replaceIn(\"{{$randomUserAgent}}/{{$randomInt}}.{{$randomInt}}\")",
+									"",
+									"  headers = Object.assign({}, baseHeaders)",
+									"",
+									"  return JSON.stringify(headers)",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "  {\n    \"event\": \"$login.succeeded\",\n    \"user_id\": \"{{user_id}}\",\n    \"user_traits\": {\n      \"email\": \"{{user_traits.email}}\",\n      \"registered_at\": \"{{user_traits.registered_at}}\"\n    },\n    \"context\": {\n      \"client_id\": \"{{context.client_id}}\",\n      \"ip\": \"{{context.ip}}\",\n      \"headers\": {{context.headers}}\n    }\n  }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://api.castle.io/v1/impersonate",
+							"protocol": "https",
+							"host": [
+								"api",
+								"castle",
+								"io"
+							],
+							"path": [
+								"v1",
+								"impersonate"
+							]
+						},
+						"description": "Start an impersonation session for a random `user_id`, using randomly-generated context data. "
+					},
+					"response": []
+				},
+				{
+					"name": "/track - $logout.succeeded (End Impersonation)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a55536c4-9289-45b7-9a64-f3ee73d457f8",
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "  {\n    \"event\": \"$logout.succeeded\",\n    \"user_id\": \"{{user_id}}\",\n    \"user_traits\": {\n      \"email\": \"{{user_traits.email}}\",\n      \"registered_at\": \"{{user_traits.registered_at}}\"\n    },\n    \"context\": {\n      \"client_id\": \"{{context.client_id}}\",\n      \"ip\": \"{{context.ip}}\",\n      \"headers\": {{context.headers}}\n    }\n  }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://api.castle.io/v1/track",
+							"protocol": "https",
+							"host": [
+								"api",
+								"castle",
+								"io"
+							],
+							"path": [
+								"v1",
+								"track"
+							]
+						},
+						"description": "Track a `$logout.succeeded` event. As long as the stored `context.client_id` and `user_id` have remained consistent since impersonation began, this event will end the impersonation session."
+					},
+					"response": []
+				}
+			],
+			"description": "Impersonate a user\n\nCastle's `/v1/impersonate` endpoint can be used for \"admin\" scenarios when you do not want to track the activity for a given `user_id`. An example would be when a support team member is impersonating one of your users - you wouldn't want to track that support team member's activity on the user account.\n\nThe impersonation will act on a randomly-generated `user_id`, which will then be saved in the collection variables for use with subsequent requests. This can be overwritten by a `user_id` defined in local or environment variables.\n\nCastle allows each fingerprint (the `request.body.context.client_id`) to actively impersonate one user at a time. Multiple support team members can impersonate multiple end-users at a time. One support team member can only impersonate one end-user at a time.",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "d565e2d6-f474-46a3-887c-a9d98a1adba7",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "20641cad-68d6-48bf-9e00-5b6f0e484b45",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "User Management",
+			"item": [
+				{
+					"name": "Delete User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "9f660447-4ca2-4b23-aaa5-713f7d1feb66",
+								"exec": [
+									"pm.test(\"Status code is 202\", function () {",
+									"    pm.response.to.have.status(202);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "https://api.castle.io/v1/privacy/users/{{user_id}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"castle",
+								"io"
+							],
+							"path": [
+								"v1",
+								"privacy",
+								"users",
+								"{{user_id}}"
+							]
+						},
+						"description": "Delete all data about a user"
+					},
+					"response": []
+				},
+				{
+					"name": "Request User Data",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e30c4f78-b04c-4295-996e-edb3a4d5ccac",
+								"exec": [
+									"pm.test(\"Status code is 202\", function () {",
+									"    pm.response.to.have.status(202);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "https://api.castle.io/v1/privacy/users/{{user_id}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"castle",
+								"io"
+							],
+							"path": [
+								"v1",
+								"privacy",
+								"users",
+								"{{user_id}}"
+							]
+						},
+						"description": "Initiate a request to compile user data. The resulting user data will be emailed to the privacy email address on file (change the privacy email via your Castle Dashboard settings)"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints related to User Management",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "6f0245b5-97d8-400f-8904-c6cb92dd56b1",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "21434297-7a20-4c5a-aaad-e4e9cd75bc8e",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"auth": {
+		"type": "basic",
+		"basic": [
+			{
+				"key": "password",
+				"value": "{{api_secret}}",
+				"type": "string"
+			},
+			{
+				"key": "username",
+				"value": "",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "bbbd96f6-9389-419f-9779-a03b641253d1",
+				"type": "text/javascript",
+				"exec": [
+					"var sdk = {",
+					"    name: \"castle-postman\",",
+					"    version: \"0.1.0\"",
+					"}",
+					"",
+					"pm.collectionVariables.set(\"castle_sdk\", JSON.stringify(sdk))"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "cf94c8c3-074c-4776-8e87-c837d206b3cd",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "96396cd6-a783-42ee-9ca2-ededc81eee47",
+			"key": "user_id",
+			"value": "default"
+		},
+		{
+			"id": "7e81894f-3cb6-4c73-b746-d0a453e26cbe",
+			"key": "user_traits.email",
+			"value": "default@example.com"
+		},
+		{
+			"id": "54fd4e77-817f-4f15-a33c-5fafbca7e4a4",
+			"key": "user_traits.registered_at",
+			"value": "2019-10-21T06:05:50.000Z"
+		},
+		{
+			"id": "ccce25dd-b969-4f2b-9154-af329ab962de",
+			"key": "context.client_id",
+			"value": "false"
+		},
+		{
+			"id": "102ef3bc-5953-4007-8e96-66a18f4a19aa",
+			"key": "context.ip",
+			"value": "1.1.1.1"
+		},
+		{
+			"id": "0e9c582e-616a-4ae9-ba6d-4820d8f2a62d",
+			"key": "context.headers",
+			"value": "{\"Accept\":\"text/html\",\"Accept-Encoding\":\"gzip\",\"Cache-Control\":\"no-cache\",\"Content-Type\":\"multipart/form-data\",\"Content-Length\":100,\"Connection\":\"close\",\"User-Agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/86.0.4238.0 Safari/537.36\"}"
+		},
+		{
+			"id": "c71dff61-5c08-4a74-b7be-34bcfcdbac46",
+			"key": "properties.email",
+			"value": "default@example.com"
+		},
+		{
+			"id": "e9ded87b-bcf5-47fb-af2b-7f49c07da898",
+			"key": "device_token",
+			"value": ""
+		},
+		{
+			"id": "dcc4a397-adb8-47e9-a24d-70aa38a0a951",
+			"key": "castle_sdk",
+			"value": "{}"
+		},
+		{
+			"id": "1f086a4a-eb3d-4e1f-97fb-358cbd15d57d",
+			"value": ""
+		}
+	],
+	"protocolProfileBehavior": {}
+}
